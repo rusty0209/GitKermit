@@ -4,6 +4,7 @@
 import sys
 import traceback
 from datetime import datetime
+from task_manager import TaskManager
 
 from aiohttp import web
 from aiohttp.web import Request, Response, json_response
@@ -57,7 +58,8 @@ async def on_error(context: TurnContext, error: Exception):
 ADAPTER.on_turn_error = on_error
 
 # Create the Bot
-BOT = MyBot()
+taskManager = TaskManager()
+BOT = MyBot(taskManager)
 
 
 # Listen for incoming requests on /api/messages
