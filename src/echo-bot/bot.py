@@ -43,4 +43,4 @@ class MyBot(ActivityHandler):
             if member_added.id != turn_context.activity.recipient.id:
                 global user_id
                 user_id = turn_context.activity.recipient.id
-                await turn_context.send_activity("Hello and welcome!")
+                await turn_context.send_activity("Hello! To see a list of available commands, use '/help'!")
