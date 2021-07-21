@@ -97,10 +97,10 @@ class TaskManager():
             else:
                 for i in self.edits1(command):
                     if i in self.commands:
-                        return f"Command not found. Did you mean '{i}'?", ""
+                        return f"Command not found. Did you mean '/{i}'?", YOUNEEDHELP
                 for i in self.edits2(command):
                     if i in self.commands:
-                        return f"Command not found. Did you mean '{i}'?", ""
+                        return f"Command not found. Did you mean '/{i}'?", YOUNEEDHELP
                 raise InvalidCommandError(full_command, INVALIDMSG)
         else: 
             raise NoSlashError(full_command, NOSLASHMSG)
