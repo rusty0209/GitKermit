@@ -2,9 +2,10 @@
 # Licensed under the MIT License.
 
 from typing_extensions import IntVar
-from botbuilder.core import ActivityHandler, TurnContext
+from botbuilder.core import ActivityHandler, TurnContext, CardFactory, MessageFactory
 from botbuilder.schema import ChannelAccount
 from todo_errors import NoSlashError, InvalidCommandError
+from card_maker import cardMaker
 
 
 class MyBot(ActivityHandler):
@@ -15,25 +16,20 @@ class MyBot(ActivityHandler):
         ActivityHandler.__init__(self)
 
     async def on_message_activity(self, turn_context: TurnContext):
-        show = False
         try:
-            msg = self.task_manager.handleCommand(turn_context.activity.text, user_id)
-            print(msg)
-            if msg[0:5] == "show":
-                show = True
-        except InvalidCommandError as e:
-            msg = f"'{e.command}'{e.message}"
+            title,text = self.task_manager.handleCommand(turn_context.activity.text, user_id)
+          
+        except InvalidCommandError as ex:
+            msg = f"'{ex.command}'{ex.message}"
             await turn_context.send_activity(msg)
 
         except NoSlashError as e:
             msg = e.message
             await turn_context.send_activity(msg)
 
-        if show:
-            for i in msg[0:5].split("\n"):
-                await turn_context.send_activity(msg)
-
-        await turn_context.send_activity(msg)
+        finally:
+            card = cardMaker().cardmaker(title, text)
+            await turn_context.send_activity(MessageFactory.attachment(CardFactory.hero_card(card)))
         #await turn_context.send_activity(f"You said '{ turn_context.activity.text }'")
 
     async def on_members_added_activity(
