@@ -16,6 +16,8 @@ class MyBot(ActivityHandler):
         ActivityHandler.__init__(self)
 
     async def on_message_activity(self, turn_context: TurnContext):
+        title = ""
+        text = ""
         try:
             title,text = self.task_manager.handleCommand(turn_context.activity.text, user_id)
           

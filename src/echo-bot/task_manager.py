@@ -4,11 +4,13 @@ from collections import defaultdict
 from todo_errors import InvalidCommandError, NoSlashError
 from CONSTANTS import *
 from task import Task
+import string
 
 class TaskManager(): 
 
     def __init__(self):
         self.tasks = defaultdict(list)
+        self.commands = ["todo", "complete", "standup", "remove", "show", "help"]
         #self.standup_times = {}
     
     def addTask(self, user, description, priority=None):
@@ -84,7 +86,7 @@ class TaskManager():
                     if task_name == "completed":
                         title = "Completed Tasks" 
                         return_msg = self.displayTasks(user_id, COMPLETE)
-                    if task_name == "all":
+                    elif task_name == "all":
                         title = "All Tasks" 
                         return_msg = self.displayStandUpHelper(user_id)
                     else: 
@@ -93,6 +95,12 @@ class TaskManager():
                 title = "StandUp Buddy"
                 return_msg = self.displayStandUpHelper(user_id)
             else:
+                for i in self.edits1(command):
+                    if i in self.commands:
+                        return f"Command not found. Did you mean '{i}'?", ""
+                for i in self.edits2(command):
+                    if i in self.commands:
+                        return f"Command not found. Did you mean '{i}'?", ""
                 raise InvalidCommandError(full_command, INVALIDMSG)
         else: 
             raise NoSlashError(full_command, NOSLASHMSG)
@@ -103,10 +111,23 @@ class TaskManager():
         string = ""
         for i in range(len(self.tasks[user])):
             if self.tasks[user][i].status == status:
-                string += f"{i}: {self.tasks[user][i]} \n\n"
+                string += f"Task {i}: {self.tasks[user][i]} \n\n"
         return string
     
     def displayStandUpHelper(self, user): 
         complete = self.displayTasks(user, COMPLETE)
         incomplete = self.displayTasks(user, INPROGRESS)
         return f"Completed Tasks: \n\n {complete} \n\n Incomplete Tasks:\n\n {incomplete}"
+
+    def edits1(self,word):
+        alphabet = string.ascii_lowercase
+        splits     = [(word[:i], word[i:]) for i in range(len(word) + 1)]
+        deletes    = [a + b[1:] for a, b in splits if b]
+        transposes = [a + b[1] + b[0] + b[2:] for a, b in splits if len(b)>1]
+        replaces   = [a + c + b[1:] for a, b in splits for c in alphabet if b]
+        inserts    = [a + c + b     for a, b in splits for c in alphabet]
+        return set(deletes + transposes + replaces + inserts)
+    
+    def edits2(self, word): 
+        """All edits that are two edits away from `word`."""
+        return (e2 for e1 in self.edits1(word) for e2 in self.edits1(e1))

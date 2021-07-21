@@ -1,6 +1,7 @@
 """Task object that can be stored and displayed"""
 from datetime import datetime
 from CONSTANTS import *
+
 class Task():
 
     def __init__(self, description, status, priority):
