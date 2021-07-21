@@ -13,6 +13,10 @@ from botbuilder.core import (
     TurnContext,
     BotFrameworkAdapter,
 )
+
+from typing import Dict
+from botbuilder.core import ActivityHandler, TurnContext
+from botbuilder.schema import ChannelAccount, ConversationReference, Activity
 from botbuilder.core.integration import aiohttp_error_middleware
 from botbuilder.schema import Activity, ActivityTypes
 
@@ -43,10 +47,11 @@ async def on_error(context: TurnContext, error: Exception):
     # Send a trace activity if we're talking to the Bot Framework Emulator
     if context.activity.channel_id == "emulator":
         # Create a trace activity that contains the error object
+        time = datetime.utcnow()
         trace_activity = Activity(
             label="TurnError",
             name="on_turn_error Trace",
-            timestamp=datetime.utcnow(),
+            timestamp=time,
             type=ActivityTypes.trace,
             value=f"{error}",
             value_type="https://www.botframework.com/schemas/error",
@@ -54,15 +59,11 @@ async def on_error(context: TurnContext, error: Exception):
         # Send a trace activity, which will be displayed in Bot Framework Emulator
         await context.send_activity(trace_activity)
 
-
 ADAPTER.on_turn_error = on_error
 
 # Create the Bot
 taskManager = TaskManager()
 BOT = MyBot(taskManager)
-
-
-
 
 # Listen for incoming requests on /api/messages
 async def messages(req: Request) -> Response:

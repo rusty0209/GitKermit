@@ -15,6 +15,8 @@ class Task():
         self.created_on = datetime.now()
         self.completed_on = None
         self.priority = priority
+        self.active = True
+
     
     def get_status(self):
         return self.status
@@ -25,15 +27,24 @@ class Task():
     def get_priority(self):
         return self.priority
     
-    
     def set_status(self, status):
         self.status = status
+        if status == INPROGRESS:
+            self.completed_on = None
+        elif status == COMPLETE:
+            self.completed_on = datetime.now()
 
     def set_description(self, description):
-        return self.description
+        self.description = description
+
+    def set_active(self):
+        self.active = True
+
+    def set_inactive(self):
+        self.active = False
 
     def set_priority(self, priority): 
-        return self.priority
+        self.priority = priority
     
     def set_completed(self):
         self.set_status(COMPLETE)
