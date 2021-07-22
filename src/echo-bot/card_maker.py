@@ -19,60 +19,70 @@ class cardMaker():
     def makeCard(self, title, text, type):
         if type == "todo":
             return self.toDoCard(title,text, False)
-        if type == "todopriorityset":
+        elif type == "todopriorityset":
             return self.toDoCard(title,text, True)
-        elif type == "show":
-            return self.showCard(title,text)
         elif type == "complete":
             return self.completeCard(title,text)
-        elif type == "remove":
-            return self.removeCard(title, text)
-        elif type == "edit":
-            return self.editCard(title, text)
-        elif type == "clear":
-            return self.clearCard(title, text)
         elif type == "tomorrow":
             return self.tomorrowCard(title, text)
         elif type == "are you sure":
             return self.areYouSureCard(title, text)
-        elif type == "status":
-            return self.statusCard(title, text)
-        elif type == "priority":
-            return self.priorityCard(title, text)
-        elif type == "description":
-            return self.descriptionCard(title, text)
+        elif type == "welcome":
+            return self.welcomeCard(title, text)
         elif type == "standup":
             return self.standupCard(title, text)
-        elif type == "help":
-            return self.helpCard(title, text)
         elif type == "spelling":
             return self.spellingCard(title, text)
+        elif type in ["edit", "description", "status", "priority", "clear", "remove", "show", "help"]:
+            return self.genericCard(title, text)
     
-    def helpCard(self, title, text):
-        card = HeroCard(
-            title=title,
-            text=text,
-            #images=[CardImage(url="clearCardImage")]
-        )
-        return card
     
     def spellingCard(self, title, text):
+        # User misspelled a command, suggest closest match (pic: confused standupbot)
         card = HeroCard(
             title=title,
             text=text,
-            images=[CardImage(url="https://i.kym-cdn.com/photos/images/newsfeed/001/762/118/72c.jpg")]
-        )
-        return card
-    
-    def priorityCard(self, title, text):
-        card = HeroCard(
-            title=title,
-            text=text,
-            #images=[CardImage(url="clearCardImage")]
+            images=[CardImage(url="https://i.ibb.co/tLZ8FKw/2.png")]
         )
         return card
 
-    def descriptionCard(self, title, text):
+    def welcomeCard(self, title, text):
+        # User misspelled a command, suggest closest match (pic: confused standupbot)
+        card = HeroCard(
+            title=title,
+            text=text,
+            images=[CardImage(url="https://i.ibb.co/4KZ69DF/welcome.png")],
+            buttons=[   
+                CardAction(
+                    type=ActionTypes.message_back,
+                    title="9:30",
+                    value="9:30",
+                ),
+                CardAction(
+                    type=ActionTypes.message_back,
+                    title="10:00",
+                    value="10:00",
+                ),
+                CardAction(
+                    type=ActionTypes.message_back,
+                    title="10:30",
+                    value="10:30",
+                ),
+                CardAction(
+                    type=ActionTypes.message_back,
+                    title="11:00",
+                    value="11:00",
+                ),CardAction(
+                    type=ActionTypes.message_back,
+                    title="11:30",
+                    value="11:30",
+                )
+            ]
+        )
+        return card
+    
+    def genericCard(self, title, text):
+        # no need for img here
         card = HeroCard(
             title=title,
             text=text,
@@ -82,20 +92,14 @@ class cardMaker():
 
 
     def standupCard(self, title, text):
+        
         card = HeroCard(
             title=title,
             text=text,
-            #images=[CardImage(url="clearCardImage")]
+            images=[CardImage(url="https://i.ibb.co/5RvL5gQ/3.png")]
         )
         return card
 
-    def statusCard(self, title, text):
-        card = HeroCard(
-            title=title,
-            text=text,
-            #images=[CardImage(url="clearCardImage")]
-        )
-        return card
 
     def areYouSureCard(self, title, text):
         card = HeroCard(
@@ -109,7 +113,7 @@ class cardMaker():
                     value="confirm",
                 )
             ],
-            #images=[CardImage(url="clearCardImage")]
+            images=[CardImage(url="https://i.ibb.co/YWzCsNk/4.png")]
         )
         return card
 
@@ -117,55 +121,24 @@ class cardMaker():
         card = HeroCard(
             title=title,
             text=text,
-            #images=[CardImage(url="clearCardImage")]
+            images=[CardImage(url="https://i.ibb.co/5xq3h3d/6.png")]
         )
         return card
-    
-    def clearCard(self, title, text):
-        card = HeroCard(
-            title=title,
-            text=text,
-            #images=[CardImage(url="clearCardImage")]
-            
-        )
-        return card
-    
-    def editCard(self, title, text):
-        card = HeroCard(
-            title=title,
-            text=text,
-            #images=[CardImage(url="clearCardImage")]
-        )
-        return card
+
     
     def completeCard(self, title, text):
         card = HeroCard(
             title=title,
             text=text,
-            #images=[CardImage(url="clearCardImage")]
+            images=[CardImage(url="https://thumbs.gfycat.com/VictoriousBigCopperhead-size_restricted.gif")]
         )
         return card
+
     
-    def removeCard(self, title, text):
-        card = HeroCard(
-            title=title,
-            text=text,
-            #images=[CardImage(url="clearCardImage")]
-        )
-        return card
-    
-    def showCard(self, title, text):
-        card = HeroCard(
-            title=title,
-            text=text,
-            #images=[CardImage(url="clearCardImage")]
-        )
-        return card
-        
 
     def toDoCard(self, title, text, prioritySet):
         buttons=[
-                
+
                 CardAction(
                     type=ActionTypes.message_back,
                     title="1",
@@ -197,6 +170,6 @@ class cardMaker():
             title=title,
             text=text,
             buttons=buttons,
-            images=[CardImage(url="https://techcrunch.com/wp-content/uploads/2019/09/Keeping-an-Enterprise-Behemoth-on-Course-with-Bill-McDermott-SAPDSC00239.jpg?w=1390&crop=1")],
+            images=[CardImage(url="https://i.ibb.co/hK8wZPN/7.png")],
         )
         return card

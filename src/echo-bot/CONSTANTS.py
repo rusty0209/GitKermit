@@ -24,6 +24,11 @@ NOSLASHMSG = "Commands must begin with the '/' character."
 INVALIDMSG = " is not a valid command. See '/help'."
 YOUNEEDHELP = "You can use ‘/help’ to see all possible commands."
 
+WELCOMEMSG = "If you're looking for help using StandUpBuddy,"\
+          "see a list of available commands, use '/help'! \n\n"\
+          "Please tell me when your stand up meetings are "\
+          "by selecting one of the following, or simply tell me "\
+          "in 24hr time, in the format 'HH-MM'"         
 ### STATUS CONSTANTS ###
 INPROGRESS = "in progress"
 BLOCKED = "blocked"

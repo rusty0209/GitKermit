@@ -4,6 +4,7 @@ from collections import defaultdict
 from todo_errors import InvalidCommandError, NoSlashError
 from CONSTANTS import *
 from task import Task
+from datetime import timedelta
 import string
 
 class TaskManager(): 
@@ -15,10 +16,10 @@ class TaskManager():
                          "edit", "status", "description"]
         #self.standup_times = {}
     
-    def addTask(self, user, description, priority=None):
+    def addTask(self, user, description, utc, priority=None):
         for t in self.tasks[user]:
             t.set_inactive()
-        task = Task(description, INPROGRESS, priority)
+        task = Task(description, INPROGRESS, priority, utc)
         self.tasks[user].append(task)
         return f"Added task {task}"
   
@@ -29,10 +30,10 @@ class TaskManager():
         del self.tasks[user][task_idx]
         return f"Removed task {task}"
 
-    def completeTask(self, user, arg):
+    def completeTask(self, user, arg, utc):
         """marks task as complete"""
         task_idx = self.getTaskIndex(user, arg)
-        self.tasks[user][task_idx].set_status(COMPLETE)
+        self.tasks[user][task_idx].set_status(COMPLETE, utc)
         task = self.tasks[user][task_idx]
         return f"Marked task {task} as complete"
 
@@ -74,13 +75,13 @@ class TaskManager():
         task = self.tasks[user][task_idx]
         return f"Changed priority of task {task.description} from {oldPrio} to {priority}"
 
-    def changeStatus(self, user, status):
+    def changeStatus(self, user, status, utc):
         for i, task in enumerate(self.tasks[user]):
             if task.active:
                 task_idx = i
                 break
         oldStatus = self.tasks[user][task_idx].get_status()
-        self.tasks[user][task_idx].set_status(status)
+        self.tasks[user][task_idx].set_status(status, utc)
         task = self.tasks[user][task_idx]
         return f"Changed status of task {task.description} from {oldStatus} to {status}"
 
@@ -101,7 +102,7 @@ class TaskManager():
     def clearTasks(self, user): 
         self.tasks[user] = []
 
-    def handleCommand(self, full_command, user_id, date):
+    def handleCommand(self, full_command, user_id, utc):
         """
         full_command = /todo I did this
         command = todo
@@ -113,11 +114,11 @@ class TaskManager():
         task_name = ""
         print(full_command)
         if (full_command[0] == "/"): 
-            full_command = full_command.split(" ", 1)
-            command = full_command[0][1:]
+            split_command = full_command.split(" ", 1)
+            command = split_command[0][1:]
 
-            if len(full_command) > 1:
-                task_name = full_command[1]
+            if len(split_command) > 1:
+                task_name = split_command[1]
 
             if command == "help":
                 title = "Help" 
@@ -126,14 +127,14 @@ class TaskManager():
             elif command == "todo":
                 title = "Task Added"
                 if "priority=" in task_name:
-                    return_msg = self.addTask(user_id, task_name[0:-11], int(task_name[-1]))
+                    return_msg = self.addTask(user_id, task_name[0:-11], utc, int(task_name[-1]))
                     type = "todopriorityset"
                 else:
-                    return_msg = self.addTask(user_id, task_name)
+                    return_msg = self.addTask(user_id, task_name, utc)
                     type = "todo"
             elif command == "complete":
                 title = "Task Completed!"
-                return_msg = self.completeTask(user_id, task_name)
+                return_msg = self.completeTask(user_id, task_name, utc)
                 type = "complete"
             elif command == "remove":
                 title = "Task Removed"
@@ -147,15 +148,15 @@ class TaskManager():
                 type = "edit"
             elif command == "show": 
                 title = "Incomplete Tasks"
-                return_msg = self.displayTasks(user_id, INPROGRESS)
+                return_msg = self.displayTasks(user_id, INPROGRESS, utc)
                 type = "show"
                 if task_name:
                     if task_name == "completed":
                         title = "Completed Tasks" 
-                        return_msg = self.displayTasks(user_id, COMPLETE)
+                        return_msg = self.displayTasks(user_id, COMPLETE, utc)
                     elif task_name == "all":
                         title = "All Tasks" 
-                        return_msg = self.displayStandUpHelper(user_id)
+                        return_msg = self.displayStandUpHelper(user_id, utc)
                     else: 
                         raise InvalidCommandError(full_command, INVALIDMSG)
             elif command == "priority": 
@@ -164,7 +165,7 @@ class TaskManager():
                 type = "priority"
             elif command == "status": 
                 title = "Status Change"
-                return_msg = self.changeStatus(user_id, task_name)
+                return_msg = self.changeStatus(user_id, task_name, utc)
                 type = "status"
             elif command == "description": 
                 title = "Description Change"
@@ -172,12 +173,12 @@ class TaskManager():
                 type = "description"
             elif command == "standup": 
                 title = "StandUp Buddy"
-                return_msg = self.displayStandUpHelper(user_id)
+                return_msg = self.displayStandUpHelper(user_id, utc, True)
                 type = "standup"
             elif command == "tomorrow":
-                title = "Today is a New Day!"
-                return_msg = self.newDay(date)
-                type = "tomorrow"
+                title = ""
+                return_msg = ""
+                type = None
             elif command == "clear":
                 title = "Are you sure?"
                 return_msg = "This can't be undone."
@@ -199,16 +200,23 @@ class TaskManager():
         
         return title, return_msg, type
 
-    def displayTasks(self, user, status):
+    def displayTasks(self, user, status, time, timecheck=False):
         string = ""
         for i in range(len(self.tasks[user])):
             if self.tasks[user][i].status == status:
-                string += f"Task {i}: {self.tasks[user][i]} \n\n"
+                if timecheck:
+                    yesterday = time - timedelta(days=1)
+                    if self.tasks[user][i].completed_on >= yesterday: 
+                        string += f"Task {i}: {self.tasks[user][i]} \n\n"
+                else:
+                    string += f"Task {i}: {self.tasks[user][i]} \n\n"
+        if string == "":
+            string = "No tasks stored."           
         return string
     
-    def displayStandUpHelper(self, user): 
-        complete = self.displayTasks(user, COMPLETE)
-        incomplete = self.displayTasks(user, INPROGRESS)
+    def displayStandUpHelper(self, user, utc, timecheck=False): 
+        complete = self.displayTasks(user, COMPLETE, utc, timecheck)
+        incomplete = self.displayTasks(user, INPROGRESS, utc)
         return f"Completed Tasks: \n\n {complete} \n\n Incomplete Tasks:\n\n {incomplete}"
 
     def edits1(self,word):
@@ -223,8 +231,3 @@ class TaskManager():
     def edits2(self, word): 
         """All edits that are two edits away from `word`."""
         return (e2 for e1 in self.edits1(word) for e2 in self.edits1(e1))
-
-    def newDay(self, date):
-         date +=1
-         return ""
-
